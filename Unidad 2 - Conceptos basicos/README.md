@@ -147,3 +147,67 @@ Nos pregunta si queremos recuperar los ficheros en el mismo directorio donde est
 Como curiosidad, los ficheros de la copia de seguridad se guardan en un .zip, y si trato de abrirlos me pide la contraseña que configuramos cuando estábamos haciendo el Job, demostrando que efectivamente están encriptados los datos:
 
 ![Backup4all](./imagenes/10.png)
+
+# Actividad 6.-
+## Configura y automatiza la copia de seguridad en un entorno linux de una estructura de directorios. Utiliza apra ello el comando tar y el servicio crond - consideramos que la copia se realiza en el mismo equipo.
+
+Supongamos que queremos hacer una comia de seguridad diaria de un directorio en el mismo equipo. Para ello tendremos que crear un script (bash) que se encargue de comprimir la estructura de directorio deseada, y que dicho script sea ejecutado diariamente por el demonio crond.
+
+El script bash será un fichero `.sh` básico que contendrá el siguiente código:
+
+```
+#!/bin/bash
+FECHA=$(date +%Y-%m-%d)
+directorio_copia=""
+directorio_fuente=""
+
+tar -czf "$directorio_copia/respaldo-$FECHA.tar.gz" "$directorio_fuente"
+```
+La variable `directorio_copia` especifica la ruta del directorio en donde queremos guardar los ficheros `.tar.gz` (copias de seguridad), mientras que la variable `directorio_fuente` especifica el directorio a respaldar.
+
+![Directorios y ficheros](./imagenes/11.png)
+
+Nos aseguramos de que el script sea ejecutable mediante el comando `chmod +x /ruta/al/script.sh`.
+
+Hecho eso ahora tendremos que agregar una nueva línea en nuestro demonio crond. Para ello ejecutamos el comando `crontab -e`. Nos saldrá la opción de poder escribir las entradas que actualmente usan crontab mediante nano o vim. Vamos a añadir la siguiente línea:
+
+```
+0 12 * * * /ruta/al/script.sh
+
+```
+
+![Configurando crontab](./imagenes/12.png)
+
+Salimos del editor y comprobamos con el comando `crontab -l` que nuestra entrada está añadida. De este modo el script se ejecutará automáticamente todos los días a las 12:00 del mediodía, teniendo configurada y automatizada nuestras copias de seguridad.
+
+![Resultaod copia de seguridad](./imagenes/13.png)
+
+# Actividad 7.-
+## Configura y automatiza la copia de seguridad en un entorno linux de una estructura de directorios, considerando que la copia se realiza en otro equipo linux/windows (host remote).
+
+Este ejercicio es similar al anterior, con la diferencia de que ahora la copia de seguridad se hace a un equipo externo, no local. Hay varias formas de hacer esto, siendo una de ellas el uso del paquete `rsync`, el cual sirve para transmitir y mantener sincronizados ficheros y directorios a través de la red mediante ssh.
+
+El script que tendremos será este:
+
+```
+#!/bin/bash
+directorio_origen="/ruta/del/directorio/de/origen"
+directorio_destino="usuario@ip_del_host_remoto:/ruta/del/directorio/de/destino/"
+
+sshpass -p "contraseña_usuario_ssh" rsync -avz "$directorio_origen" "$directorio_destino"
+
+```
+
+![Script rsync](./imagenes/14.png)
+
+La variable `directorio_origen` especifica la ruta del directorio del que queremos hacer una copia, mientras que la variable `directorio_destino` especifica el directorio donde va a ser copiado (sincronizado) en el host externo especificando tanto la dirección IP como el usuario. La utilidad sshpass sirve para que la conexión ssh se produzca de forma automática introduciendo la contraseña contenida en el script.
+
+Ejecutamos el comando `chmod +x /ruta/al/script.sh`, y luego el comando `crontab -e` seleccionado el editor nano para añadir la siguiente línea:
+
+```
+0 14 * * * /ruta/al/script.sh
+```
+
+![Crontab rsync](./imagenes/15.png)
+
+Al salir podemos utilizar el comando `crontab -l` para comprobar que la línea se ha añadido exitosamente. Ahora cada vez que sea las 1 de la tarde el script se ejecutará automáticamente, creando la copia de seguridad en el host externo.
